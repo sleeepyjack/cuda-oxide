@@ -71,6 +71,26 @@ The base image tag is wired through a build arg in `devcontainer.json` under
 `build.args.CUDA_IMAGE_TAG`. Edit it there to pin a different
 `nvidia/cuda:*-devel-ubuntu24.04` tag, then rebuild the container.
 
+## Matching host uid / gid
+
+The Dockerfile creates a non-root `vscode` user at 1000:1000 by default and
+removes Ubuntu 24.04's stock `ubuntu` user that sits on those ids. Two paths
+to make container-created files match your host owner:
+
+- **VS Code Dev Containers extension** honours `updateRemoteUserUID: true`
+  (set in `devcontainer.json`) and rewrites the `vscode` user's UID / GID to
+  match the host on attach. No build-time work.
+- **Bare `devcontainer` CLI** does not run that fixup, so override the
+  build args directly:
+
+  ```bash
+  devcontainer up --workspace-folder . \
+    --build-arg USER_UID="$(id -u)" --build-arg USER_GID="$(id -g)"
+  ```
+
+  Or edit `build.args.USER_UID` / `build.args.USER_GID` in
+  `devcontainer.json`.
+
 ## Optional: libmathdx
 
 `.cargo/config.toml` ships a `LIBMATHDX_PATH = "/path/to/libmathdx/install"`

@@ -8,6 +8,7 @@
         }
     },
     "remoteUser": "vscode",
+    "updateRemoteUserUID": true,
     "workspaceFolder": "/workspaces/cuda-oxide",
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/cuda-oxide,type=bind,consistency=cached",
     "runArgs": [

@@ -54,13 +54,31 @@ RUN update-alternatives --install /usr/bin/llc llc /usr/bin/llc-21 100 \
  && update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
 
 # ---- Non-root user (VS Code devcontainer convention) ---------------------
+#
+# Ubuntu 24.04 ships a default `ubuntu` user and group at 1000:1000, so a bare
+# `groupadd --gid 1000` collides. Drop any pre-existing user / group sitting on
+# the requested UID / GID first, then create `vscode` cleanly.
+#
+# To make container-created files match the host owner, override USER_UID /
+# USER_GID via `build.args` (set them to the output of `id -u` / `id -g` on
+# the host). VS Code's Dev Containers extension also honours
+# `updateRemoteUserUID: true` (the default) and rewrites the user's UID / GID
+# to match the host on attach.
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
 
-RUN groupadd --gid ${USER_GID} ${USERNAME} \
- && useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /bin/bash ${USERNAME} \
+RUN if getent passwd "${USER_UID}" >/dev/null 2>&1; then \
+        existing_user=$(getent passwd "${USER_UID}" | cut -d: -f1); \
+        userdel -r "${existing_user}" 2>/dev/null || true; \
+    fi \
+ && if getent group "${USER_GID}" >/dev/null 2>&1; then \
+        existing_group=$(getent group "${USER_GID}" | cut -d: -f1); \
+        groupdel "${existing_group}" 2>/dev/null || true; \
+    fi \
+ && groupadd --gid "${USER_GID}" "${USERNAME}" \
+ && useradd --uid "${USER_UID}" --gid "${USER_GID}" -m -s /bin/bash "${USERNAME}" \
  && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
  && chmod 0440 /etc/sudoers.d/${USERNAME}
 
