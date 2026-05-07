@@ -1,0 +1,38 @@
+{
+    "name": "cuda-oxide",
+    "build": {
+        "context": "..",
+        "dockerfile": "Dockerfile",
+        "args": {
+            "CUDA_IMAGE_TAG": "13.2.1-devel-ubuntu24.04"
+        }
+    },
+    "remoteUser": "vscode",
+    "workspaceFolder": "/workspaces/cuda-oxide",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/cuda-oxide,type=bind,consistency=cached",
+    "runArgs": [
+        "--gpus=all"
+    ],
+    "hostRequirements": {
+        "gpu": true
+    },
+    "containerEnv": {
+        "CUDA_TOOLKIT_PATH": "/usr/local/cuda",
+        "CUDA_OXIDE_LLC": "/usr/bin/llc-21",
+        "LIBCLANG_PATH": "/usr/lib/llvm-21/lib"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "tamasfe.even-better-toml",
+                "vadimcn.vscode-lldb",
+                "nvidia.nsight-vscode-edition"
+            ],
+            "settings": {
+                "rust-analyzer.check.command": "clippy"
+            }
+        }
+    },
+    "postCreateCommand": "cargo oxide setup && cargo oxide doctor || true"
+}

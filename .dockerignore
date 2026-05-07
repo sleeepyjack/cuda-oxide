@@ -1,0 +1,35 @@
+# Keep the docker build context lean. `.devcontainer/devcontainer.json`
+# uses `build.context: ".."` (the repo root), so without this file every
+# rebuild ships the full workspace including target/, .git/, and stale IR
+# artifacts to the daemon.
+
+# Rust build outputs
+target/
+
+# Git metadata
+.git/
+.gitattributes
+
+# Tooling state and IDE config
+.claude/
+.cursor/
+.vscode/
+.venv/
+
+# Generated IR / PTX / cubin artifacts
+*.ptx
+*.ll
+*.bc
+*.cubin
+*.fatbin
+*.ltoir
+.ltoir_arch
+
+# Python caches (book + scripts)
+**/__pycache__/
+*.pyc
+
+# Vendored archives, OS cruft
+vendor/
+*.tar.gz
+.DS_Store
